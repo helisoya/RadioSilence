@@ -14,6 +14,7 @@ class UInputAction;
 class UInputMappingContext;
 struct FInputActionValue;
 
+
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
 UCLASS(config=Game)
@@ -61,6 +62,14 @@ class ARadioSilenceCharacter : public ACharacter
 	/** Run Speed */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Infos, meta = (AllowPrivateAccess = "true"))
 	float RunSpeed;
+
+	/** Water Height */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Infos, meta = (AllowPrivateAccess = "true"))
+	float waterHeight;
+
+	/** Smimming */
+	UPROPERTY(BlueprintReadOnly, Category = Infos, meta = (AllowPrivateAccess = "true"))
+	bool swimming;
 	
 public:
 	ARadioSilenceCharacter();
@@ -92,6 +101,12 @@ protected:
 
 	/** Interact with objects */
 	void Interaction(const FInputActionValue& Value);
+	
+	/** Tick function **/
+	virtual void Tick(float deltaSeconds) override;
+
+	/** Change if swimming **/
+	void ChangeSwimming(bool isSwimming);
 
 protected:
 	// APawn interface

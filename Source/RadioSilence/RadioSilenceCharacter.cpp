@@ -10,6 +10,10 @@
 #include "InputActionValue.h"
 #include "Engine/LocalPlayer.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Components/BoxComponent.h"
+#include "Engine/GameEngine.h"
+#include "Containers/UnrealString.h"
+#include "GameFramework/PhysicsVolume.h"
 
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
@@ -80,7 +84,7 @@ void ARadioSilenceCharacter::SetupPlayerInputComponent(UInputComponent* PlayerIn
 
 		// Interaction
 		EnhancedInputComponent->BindAction(InteractionAction, ETriggerEvent::Triggered, this, &ARadioSilenceCharacter::Interaction);
-	
+
 		this->GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
 	}
 	else
@@ -147,5 +151,29 @@ void ARadioSilenceCharacter::Interaction(const FInputActionValue& Value)
 	}
 }
 
+void ARadioSilenceCharacter::Tick(float deltaSeconds)
+{
+	Super::Tick(deltaSeconds);
 
+	float posZ = this->GetActorLocation().Z;
 
+	if (swimming && posZ > waterHeight) {
+		ChangeSwimming(false);
+	}
+	else if (!swimming && posZ < waterHeight) {
+		ChangeSwimming(true);
+	}
+}
+
+void ARadioSilenceCharacter::ChangeSwimming(bool isSwimming)
+{
+	UE_LOG(LogTemp, Warning, TEXT("Changing swim mode to "));
+
+	swimming = isSwimming;
+	this->GetCharacterMovement()->SetMovementMode( swimming ?
+		this->GetCharacterMovement()->DefaultWaterMovementMode.GetValue() : 
+		this->GetCharacterMovement()->DefaultLandMovementMode.GetValue()
+	);
+
+	this->GetPhysicsVolume()->bWaterVolume = swimming;
+}
