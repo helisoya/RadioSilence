@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "Logging/LogMacros.h"
+#include "Usable.h"
 #include "RadioSilenceGameCharacter.generated.h"
 
 class UInputComponent;
@@ -13,6 +14,7 @@ class UCameraComponent;
 class UInputAction;
 class UInputMappingContext;
 struct FInputActionValue;
+class ABoat;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
@@ -66,6 +68,11 @@ class ARadioSilenceGameCharacter : public ACharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Infos, meta = (AllowPrivateAccess = "true"))
 	float waterHeight;
 
+	/** Max Interaction Distance */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Infos, meta = (AllowPrivateAccess = "true"))
+	int maxInteractionDistance;
+
+	ABoat* boatControlling;
 	
 public:
 	ARadioSilenceGameCharacter();
@@ -82,6 +89,8 @@ public:
 	/** Smimming */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Infos)
 	bool swimming;
+
+	IUsable* UseFocus;
 
 protected:
 	/** Called for movement input */
@@ -118,6 +127,9 @@ public:
 	USkeletalMeshComponent* GetMesh1P() const { return Mesh1P; }
 	/** Returns FirstPersonCameraComponent subobject **/
 	UCameraComponent* GetFirstPersonCameraComponent() const { return FirstPersonCameraComponent; }
+
+	void EnableBoatControls(ABoat* boat);
+	void DisableBoatControls();
 
 };
 

@@ -11,6 +11,11 @@
 #include "Engine/LocalPlayer.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/PhysicsVolume.h"
+#include "Usable.h"
+#include "CollisionQueryParams.h"
+#include "Kismet/KismetSystemLibrary.h"
+#include "Engine/EngineTypes.h"
+#include "Boat.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -68,6 +73,7 @@ void ARadioSilenceGameCharacter::SetupPlayerInputComponent(UInputComponent* Play
 
 		// Moving
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ARadioSilenceGameCharacter::Move);
+		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Completed, this, &ARadioSilenceGameCharacter::Move);
 
 		// Looking
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ARadioSilenceGameCharacter::Look);
@@ -90,13 +96,30 @@ void ARadioSilenceGameCharacter::SetupPlayerInputComponent(UInputComponent* Play
 	}
 }
 
+void ARadioSilenceGameCharacter::EnableBoatControls(ABoat* boat)
+{
+	boatControlling = boat;
+	boatControlling->SetIsControlled(true);
+	this->SetActorEnableCollision(false);
+}
+
+void ARadioSilenceGameCharacter::DisableBoatControls()
+{
+	boatControlling->SetIsControlled(false);
+	boatControlling = nullptr;
+	this->SetActorEnableCollision(true);
+}
+
 
 void ARadioSilenceGameCharacter::Move(const FInputActionValue& Value)
 {
 	// input is a Vector2D
 	FVector2D MovementVector = Value.Get<FVector2D>();
 
-	if (Controller != nullptr)
+	if (boatControlling != nullptr) {
+		boatControlling->Move(MovementVector.Y, MovementVector.X);
+	}
+	else if (Controller != nullptr)
 	{
 		// add movement 
 		AddMovementInput(GetActorForwardVector(), MovementVector.Y);
@@ -106,6 +129,8 @@ void ARadioSilenceGameCharacter::Move(const FInputActionValue& Value)
 
 void ARadioSilenceGameCharacter::Look(const FInputActionValue& Value)
 {
+	if (boatControlling != nullptr) return;
+
 	// input is a Vector2D
 	FVector2D LookAxisVector = Value.Get<FVector2D>();
 
@@ -119,6 +144,8 @@ void ARadioSilenceGameCharacter::Look(const FInputActionValue& Value)
 
 void ARadioSilenceGameCharacter::StartRun(const FInputActionValue& Value)
 {
+	if (boatControlling != nullptr) return;
+
 	if (Controller != nullptr)
 	{
 		this->GetCharacterMovement()->MaxWalkSpeed = RunSpeed;
@@ -127,6 +154,8 @@ void ARadioSilenceGameCharacter::StartRun(const FInputActionValue& Value)
 
 void ARadioSilenceGameCharacter::EndRun(const FInputActionValue& Value)
 {
+	if (boatControlling != nullptr) return;
+
 	if (Controller != nullptr)
 	{
 		this->GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
@@ -139,11 +168,49 @@ void ARadioSilenceGameCharacter::PauseGame(const FInputActionValue& Value)
 
 void ARadioSilenceGameCharacter::Interaction(const FInputActionValue& Value)
 {
+	UE_LOG(LogTemp, Display, TEXT("Interacting"));
+
+	if (boatControlling != nullptr) {
+		DisableBoatControls();
+	}
+	else if (UseFocus != nullptr) {
+		UseFocus->OnUsed(GetController());
+	}
 }
 
 void ARadioSilenceGameCharacter::Tick(float deltaSeconds)
 {
 	Super::Tick(deltaSeconds);
+
+	if (boatControlling == nullptr && Controller && Controller->IsLocalPlayerController()) // we check the controller becouse we dont want bots to grab the use object and we need a controller for the Getplayerviewpoint function
+	{
+		FVector CamLoc;
+		FRotator CamRot;
+
+
+		Controller->GetPlayerViewPoint(CamLoc, CamRot); // Get the camera position and rotation
+		const FVector StartTrace = CamLoc; // trace start is the camera location
+		const FVector Direction = CamRot.Vector();
+		const FVector EndTrace = StartTrace + Direction * maxInteractionDistance; // and trace end is the camera location + an offset in the direction you are looking, the 200 is the distance at wich it checks
+
+		UseFocus = nullptr;
+		FHitResult Hit(ForceInit);
+		if (GetWorld()->LineTraceSingleByChannel(Hit, StartTrace, EndTrace, ECC_GameTraceChannel2)) {
+			IUsable* usable = Cast<IUsable>(Hit.GetActor()); // we cast the hit actor to the IUsable interface
+			
+			if (usable) 
+			{
+				UE_LOG(LogTemp, Display, TEXT("Seeing usable object"));
+				UseFocus = usable;
+			}
+		}
+	}
+	else {
+		SetActorLocation(boatControlling->GetPlayerPosition());
+		//FirstPersonCameraComponent->SetRelativeRotation(boatControlling->GetPlayerRotation());
+		Controller->ClientSetRotation(boatControlling->GetPlayerRotation()); // here
+		return;
+	}
 
 	float posZ = this->GetActorLocation().Z;
 
