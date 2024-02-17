@@ -16,6 +16,9 @@
 #include "Kismet/KismetSystemLibrary.h"
 #include "Engine/EngineTypes.h"
 #include "Boat.h"
+#include "RadioSilenceGUI.h"
+#include "Blueprint/UserWidget.h"
+#include "RadioSilenceGamePlayerController.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -42,6 +45,9 @@ ARadioSilenceGameCharacter::ARadioSilenceGameCharacter()
 	//Mesh1P->SetRelativeRotation(FRotator(0.9f, -19.19f, 5.2f));
 	Mesh1P->SetRelativeLocation(FVector(-30.f, 0.f, -150.f));
 
+	PlayerGUIClass = nullptr;
+	PlayerGUI = nullptr;
+
 }
 
 void ARadioSilenceGameCharacter::BeginPlay()
@@ -58,6 +64,24 @@ void ARadioSilenceGameCharacter::BeginPlay()
 		}
 	}
 
+	if (PlayerGUIClass) {
+		ARadioSilenceGamePlayerController* controller = GetController<ARadioSilenceGamePlayerController>();
+		check(controller);
+		UE_LOG(LogTemp, Display, TEXT("Controller OK"));
+		PlayerGUI = CreateWidget<URadioSilenceGUI>(controller, PlayerGUIClass);
+		check(PlayerGUI);
+		UE_LOG(LogTemp, Display, TEXT("GUI OK"));
+		PlayerGUI->AddToViewport();
+	}
+
+}
+
+void ARadioSilenceGameCharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	if (PlayerGUI) {
+		PlayerGUI->RemoveFromViewport();
+		PlayerGUI = nullptr;
+	}
 }
 
 //////////////////////////////////////////////////////////////////////////// Input
@@ -203,6 +227,13 @@ void ARadioSilenceGameCharacter::Tick(float deltaSeconds)
 				UE_LOG(LogTemp, Display, TEXT("Seeing usable object"));
 				UseFocus = usable;
 			}
+		}
+
+		if (UseFocus) {
+			UseFocus->DisplayPrompt(PlayerGUI);
+		}
+		else {
+			PlayerGUI->SetInteractionText("");
 		}
 	}
 	else {

@@ -15,6 +15,7 @@ class UInputAction;
 class UInputMappingContext;
 struct FInputActionValue;
 class ABoat;
+class URadioSilenceGUI;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
@@ -79,6 +80,7 @@ public:
 
 protected:
 	virtual void BeginPlay();
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 public:
 		
@@ -91,6 +93,12 @@ public:
 	bool swimming;
 
 	IUsable* UseFocus;
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<URadioSilenceGUI> PlayerGUIClass;
+
+	UPROPERTY()
+	URadioSilenceGUI* PlayerGUI;
 
 protected:
 	/** Called for movement input */

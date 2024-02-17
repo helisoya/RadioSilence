@@ -9,6 +9,7 @@
 #include "Components/ArrowComponent.h"
 #include "Logging/StructuredLog.h"
 #include "DrawDebugHelpers.h"
+#include "RadioSilenceGUI.h"
 
 // Sets default values
 ABoat::ABoat()
@@ -78,8 +79,9 @@ void ABoat::OnUsed(AController* user)
 	CurrentCharacter->EnableBoatControls(this);
 }
 
-void ABoat::DisplayPrompt(UCanvas* Canvas, AController* user)
+void ABoat::DisplayPrompt(URadioSilenceGUI* gui)
 {
+	gui->SetInteractionText("Press LMB to enter/exit");
 }
 
 void ABoat::Move(double forward, double right)

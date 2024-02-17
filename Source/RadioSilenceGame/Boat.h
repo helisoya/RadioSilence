@@ -12,7 +12,10 @@
 class UStaticMeshComponent;
 class UBuoyancyComponent;
 class UBoxComponent;
+class URadioSilenceGUI;
 class UInputComponent;
+
+
 
 UCLASS()
 class RADIOSILENCEGAME_API ABoat : public APawn, public IUsable
@@ -62,7 +65,7 @@ public:
 	// This function will be called when the user uses the object
 	virtual void OnUsed(AController* user) override;
 	// This function is called each frame from the hud, it should be used to put messages to the screen, like the USE promt in UDK
-	virtual void DisplayPrompt(UCanvas* Canvas, AController* user) override;
+	virtual void DisplayPrompt(URadioSilenceGUI* gui) override;
 
 	void Move(double forward, double right);
 
