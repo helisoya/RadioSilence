@@ -55,8 +55,10 @@ void ARadioSilenceGameCharacter::BeginPlay()
 	// Call the base class  
 	Super::BeginPlay();
 
+	APlayerController* PlayerController = Cast<APlayerController>(Controller);
+
 	// Add Input Mapping Context
-	if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
+	if (PlayerController)
 	{
 		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
 		{
@@ -72,6 +74,8 @@ void ARadioSilenceGameCharacter::BeginPlay()
 		check(PlayerGUI);
 		UE_LOG(LogTemp, Display, TEXT("GUI OK"));
 		PlayerGUI->AddToViewport();
+
+		PlayerGUI->Init(PlayerController);
 	}
 
 }
@@ -79,7 +83,7 @@ void ARadioSilenceGameCharacter::BeginPlay()
 void ARadioSilenceGameCharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	if (PlayerGUI) {
-		PlayerGUI->RemoveFromViewport();
+		PlayerGUI->RemoveFromParent();
 		PlayerGUI = nullptr;
 	}
 }
@@ -188,6 +192,17 @@ void ARadioSilenceGameCharacter::EndRun(const FInputActionValue& Value)
 
 void ARadioSilenceGameCharacter::PauseGame(const FInputActionValue& Value)
 {
+	if (APlayerController* PlayerController = Cast<APlayerController>(Controller)) {
+
+
+		if (PlayerGUI->IsPaused()) {
+			PlayerGUI->ClosePauseMenu();
+		}
+		else {
+			PlayerGUI->OpenPauseMenu();
+		}
+		
+	}
 }
 
 void ARadioSilenceGameCharacter::Interaction(const FInputActionValue& Value)
