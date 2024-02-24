@@ -2,6 +2,7 @@
 
 
 #include "DayNightCycle.h"
+#include "RadioSilenceGameInstance.h"
 
 // Sets default values
 ADayNightCycle::ADayNightCycle()
@@ -15,6 +16,11 @@ ADayNightCycle::ADayNightCycle()
 void ADayNightCycle::BeginPlay()
 {
 	Super::BeginPlay();
+
+	URadioSilenceGameInstance* gameInstance = Cast<URadioSilenceGameInstance>(GetGameInstance());
+	if (gameInstance) {
+		gameInstance->dayNightCycle = this;
+	}
 }
 
 // Called every frame

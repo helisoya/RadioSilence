@@ -19,6 +19,7 @@
 #include "RadioSilenceGUI.h"
 #include "Blueprint/UserWidget.h"
 #include "RadioSilenceGamePlayerController.h"
+#include "MapIconWidget.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -76,6 +77,15 @@ void ARadioSilenceGameCharacter::BeginPlay()
 		PlayerGUI->AddToViewport();
 
 		PlayerGUI->Init(PlayerController);
+		
+		if (MapIconWidgetClass) {
+			mapIcon = CreateWidget<UMapIconWidget>(controller, MapIconWidgetClass);
+			check(mapIcon);
+			UE_LOG(LogTemp, Display, TEXT("Icon OK"));
+
+			mapIcon->Init(iconTexture);
+			PlayerGUI->AddIconToMap(mapIcon);
+		}
 	}
 
 }
@@ -220,6 +230,15 @@ void ARadioSilenceGameCharacter::Interaction(const FInputActionValue& Value)
 void ARadioSilenceGameCharacter::Tick(float deltaSeconds)
 {
 	Super::Tick(deltaSeconds);
+
+	// Updating Map Icon
+
+	FVector2D mapPos;
+	FVector playerPos = GetActorLocation();
+
+	mapIcon->SetPosition(FVector2D(
+		playerPos.X / 806400 * 1000 - 15,
+		playerPos.Y / 806400 * 1000 - 15));
 
 	if (boatControlling == nullptr && Controller && Controller->IsLocalPlayerController()) // we check the controller becouse we dont want bots to grab the use object and we need a controller for the Getplayerviewpoint function
 	{

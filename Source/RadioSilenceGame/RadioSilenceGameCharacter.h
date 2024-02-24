@@ -16,6 +16,7 @@ class UInputMappingContext;
 struct FInputActionValue;
 class ABoat;
 class URadioSilenceGUI;
+class UMapIconWidget;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
@@ -99,6 +100,15 @@ public:
 
 	UPROPERTY()
 	URadioSilenceGUI* PlayerGUI;
+
+	UPROPERTY(EditAnywhere, Category = Infos)
+	TSubclassOf<UMapIconWidget> MapIconWidgetClass;
+
+	UPROPERTY(EditAnywhere, Category = Infos)
+	UTexture2D* iconTexture;
+
+	UPROPERTY()
+	UMapIconWidget* mapIcon;
 
 protected:
 	/** Called for movement input */

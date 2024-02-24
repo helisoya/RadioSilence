@@ -6,6 +6,7 @@
 #include "Blueprint/UserWidget.h"
 #include "RadioSilenceGUI.generated.h"
 
+class UMapIconWidget;
 
 /**
  * 
@@ -36,6 +37,15 @@ public :
 
 	/** Returns if the game is paused or not **/
 	bool IsPaused();
+	
+	/** Refreshs the time on the GUI **/
+	void RefreshTimeText();
+
+	/** Add a widget to the map **/
+	void AddIconToMap(UMapIconWidget* widget);
+
+	/** Remove a widget from the map **/
+	void RemoveIconFromMap(UUserWidget* widget);
 
 	UPROPERTY(EditAnywhere,meta=(BindWidget))
 	class UTextBlock* InteractionText;
@@ -52,6 +62,12 @@ public :
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
 	class UButton* PauseQuitButton;
 
+	UPROPERTY(EditAnywhere, meta = (BindWidget))
+	class UTextBlock* TimeText;
+
+	UPROPERTY(EditAnywhere, meta = (BindWidget))
+	class UCanvasPanel* MapRoot;
+
 private :
 
 	UPROPERTY()
@@ -59,5 +75,7 @@ private :
 
 	UPROPERTY()
 	APlayerController* playerController;
+
+	class URadioSilenceGameInstance* gameInstance;
 	
 };
